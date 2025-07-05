@@ -76,3 +76,5 @@ version "4.10"
 #include "zscript/accensus/merchant/econ/money/pickups/gems/BigGem.zsc"
 
 #include "zscript/accensus/merchant/econ/money/pickups/paper/PaperCurrency.zsc"
+
+#include "zscript/accensus/merchant/econ/money/pickups/paper/Cards.zsc"

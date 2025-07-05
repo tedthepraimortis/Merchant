@@ -1,6 +1,7 @@
 class MerchantHandler : EventHandler
 {
 	private int MoneyMode;
+	private int LastSecret;
 	private bool SpawnedTiberium;
 
 	override void NetworkProcess(ConsoleEvent e)
@@ -34,6 +35,24 @@ class MerchantHandler : EventHandler
 			CardPlayers[PlayerIndex].Player.A_StartSound("Poker/Check", 10, CHANF_UI, attenuation: 1.5);
 			RotatePlayer();
 			return;
+		}
+
+		Array<HDMerchant> EscortedMerchants;
+		BlockThingsIterator it = BlockThingsIterator.Create(plr, HDCONST_ONEMETRE * 10);
+		while (it.Next())
+		{
+			if (!(it.thing is 'HDMerchant') || plr.Distance3D(it.thing) > HDCONST_ONEMETRE * 10 || !plr.CheckSight(it.thing) || MoneyMode == 2)
+			{
+				continue;
+			}
+
+			EscortedMerchants.Push(HDMerchant(it.thing));
+		}
+
+		for (int i = 0; i < EscortedMerchants.Size(); ++i)
+		{
+			players[i].mo.A_GiveInventory('MercenaryBucks', random(125, 425));
+			EscortedMerchants[i].Destroy(); // [Ace] You have escorted the merchant(s) to the exit. They won't be there if you return. Only affects hubs.
 		}
 
 		Array<string> ParsedName;
@@ -114,7 +133,7 @@ class MerchantHandler : EventHandler
 	{
 		if (e.IsReopen) return;
 
-		MoneyMode = hdm_moneymode == 3 ? random(0, 1) : hdm_moneymode;
+		MoneyMode = hdm_moneymode == 4 ? random(0, 2) : hdm_moneymode;
 		
 		InitCurrencies();
 		for (int i = 0; i < Stores.Size(); ++i) InitStore(i);
@@ -314,6 +333,17 @@ class MerchantHandler : EventHandler
 				InitBountyTargets(count);
 			}
 		}
+
+		if (level.found_secrets != LastSecret)
+		{
+			LastSecret = level.found_secrets;
+			let plr = HDPlayerPawn(self);
+			if (hdm_bucksfromsecrets == true)
+			{
+				AceCore.GiveToPlayers('MercenaryBucks', random(15, 25));
+			}
+		}
+
 	}
 
 	override void WorldThingDied(WorldEvent e)
@@ -332,6 +362,10 @@ class MerchantHandler : EventHandler
 			{
 				DropCurrency(mob);
 			}
+		}
+		if (MoneyMode == 2 && e.Thing is 'HDOperator' && !e.Thing.bFRIENDLY)
+		{
+			e.Thing.A_SpawnItemEx('MercenaryCard', 0, 0, 0, frandom(0.5, 2.0), 0, frandom(1.0, 4.0), random(0, 359), SXF_NOCHECKPOSITION);
 		}
 	}
 

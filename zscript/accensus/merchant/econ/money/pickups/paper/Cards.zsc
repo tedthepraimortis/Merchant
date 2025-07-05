@@ -1,0 +1,20 @@
+class MercenaryCard:HDUPK{
+    default{
+        scale 0.25;
+        hdupk.amount 100;
+        hdupk.pickupsound "weapons/pocket";
+        hdupk.pickupmessage "$Pickup_MercenaryCard";
+        hdupk.pickuptype "MercenaryBucks";
+    }
+
+    override void PostBeginPlay()
+    {
+        Super.PostBeginPlay();
+
+        Amount = int(Amount * frandom(0.60, 1.20) * hdm_cardscale);
+    }
+    states{
+    spawn:
+        MCRD A -1;
+    }
+}
